@@ -1,5 +1,5 @@
-l>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Computer Quest — Graduation Edition</title><style>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Computer Quest — Manual Edition</title><style>
 :root {
   --ink: #34435a;
   --accent: #bd2338;
@@ -274,29 +274,23 @@ button:active { transform: translateY(2px); box-shadow: none; }
   .tile:has(.token) { padding-right: clamp(14px, 5cqh, 26px); }
   .question { font-size: clamp(15px, min(4.4cqw, 8cqh), 32px); }
 }
-html,body{overflow:hidden} .tile .answer{overflow-wrap:normal;overflow-wrap:anywhere} </style></head>
+html,body{overflow:hidden} .tile .answer{overflow-wrap:normal;overflow-wrap:anywhere} .center{grid-template-rows:auto minmax(0,1fr) auto auto auto} button.tile{box-shadow:none;padding:1px 4px} button.tile:hover{outline:2px solid #9d91d5} button.tile.correct:hover{outline:2px solid #b68719} </style></head>
 <body>
   <header>
     <h1>🎓 Computer Quest</h1>
-    <p>Graduation Edition</p>
+    <p>Manual Edition</p>
   </header>
   <main class="shell">
     <section class="board" id="board" aria-label="Computer components game board">
       <div class="center">
         <div class="eyebrow"><span id="count"></span> · <span id="answerMode"></span></div>
         <div class="question" id="question" aria-live="polite"></div>
-        <div class="space-instruction">Press <kbd>Space</kbd> to start or stop</div>
+        <div class="space-instruction">Click the correct answer(s) on the board.</div>
         <div class="controls">
           <button type="button" id="next">Next →</button>
           <button type="button" id="reset">↺ Reset</button>
         </div>
-        <div class="speed-control">
-          <label for="speed">Movement speed</label>
-          <span>Slow</span>
-          <input id="speed" type="range" min="1" max="5" step="1" value="2">
-          <span>Fast</span>
-          <output id="speedLabel" for="speed">Slow</output>
-        </div>
+        
         <div class="status" id="status" aria-live="polite"></div>
       </div>
       <div class="confetti" id="confetti" aria-hidden="true"></div>
@@ -331,7 +325,9 @@ for (let c = 1; c <= 6; c++) coordinates.push([0, c]);
 for (let r = 1; r <= 5; r++) coordinates.push([r, 6]);
 
 const tiles = PROPERTIES.map((name, i) => {
-  const tile = document.createElement('div');
+  const tile = document.createElement('button');
+  tile.type = 'button';
+  tile.addEventListener('click', () => choose(i));
   tile.className = 'tile';
   tile.style.setProperty('--tile', colors[i % colors.length]);
   tile.style.gridRow = coordinates[i][0] + 1;
@@ -352,11 +348,7 @@ const tiles = PROPERTIES.map((name, i) => {
   return tile;
 });
 
-const token=document.createElement('span');token.className='token';token.innerHTML=`<svg viewBox="0 0 70 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18 53 Q8 62 6 87 L64 87 Q62 62 52 53 Z" fill="#344f91" stroke="#23365e" stroke-width="2.5"/><path d="M28 52 L35 71 L42 52 L46 88 L24 88Z" fill="#f5d6aa"/><path d="M28 53 L35 66 L42 53" fill="none" stroke="#fff6d7" stroke-width="4"/><path d="M19 58 L10 76 M51 58 L60 76" stroke="#23365e" stroke-width="4" stroke-linecap="round"/><path d="M28 85 L26 91 M42 85 L44 91" stroke="#243251" stroke-width="6" stroke-linecap="round"/><circle cx="35" cy="36" r="17" fill="#f4cba5" stroke="#a87353" stroke-width="1.5"/><path d="M18 34 Q17 17 35 17 Q53 17 52 34 Q46 26 35 27 Q23 27 18 34" fill="#43322c"/><circle cx="29" cy="37" r="1.8" fill="#2e2931"/><circle cx="41" cy="37" r="1.8" fill="#2e2931"/><path d="M30 44 Q35 49 40 44" stroke="#a34f57" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M8 19 L35 7 L62 19 L35 31Z" fill="#253e79" stroke="#192c57" stroke-width="2"/><path d="M22 24 L22 33 Q35 42 48 33 L48 24" fill="#253e79" stroke="#192c57" stroke-width="2"/><path d="M62 19 L62 39" stroke="#e8bc4b" stroke-width="2.5"/><circle cx="62" cy="42" r="4" fill="#f4d066"/></svg>`;token.setAttribute('role','img');token.setAttribute('aria-label','Student wearing a graduation cap and gown');
-
-function place() {
-  tiles[position].appendChild(token);
-}
+function place() {}
 
 function celebrateCorrectAnswer() {
   applause.currentTime = 0;
@@ -423,13 +415,7 @@ function go() {
   startMotion();
 }
 
-speedSlider.addEventListener('input', () => {
-  speedLabel.textContent = speedNames[Number(speedSlider.value) - 1];
-  if (movementTimer !== null) {
-    stopMotion();
-    startMotion();
-  }
-});
+
 
 function choose(i) {
   if (advanceTimer !== null) return;
@@ -450,7 +436,7 @@ function next() {
   clearFeedback();
   questionIndex = (questionIndex + 1) % QUESTIONS.length;
   showQuestion();
-  status('Press Space to move. Select all correct answers.');
+  status('Click the correct answer(s).');
 }
 
 function reset() {
@@ -461,25 +447,13 @@ function reset() {
   clearFeedback();
   place();
   showQuestion();
-  status('Stop on a tile with a correct answer.');
+  status('Click the correct answer(s).');
 }
 
-document.addEventListener('keydown', event => {
-  if (event.code !== 'Space' || event.altKey || event.ctrlKey || event.metaKey) return;
-  const target = event.target;
-  if (target instanceof HTMLElement &&
-      (target.matches('input:not([type=range]), textarea, select') || target.isContentEditable)) return;
-  event.preventDefault();
-  if (event.repeat) return;
 
-  if (movementTimer === null) {
-    go();
-  } else {
-    stop();
-  }
-});
 document.getElementById('next').addEventListener('click', next);
 document.getElementById('reset').addEventListener('click', reset);
 reset();
 </script>
 </body></html>
+
